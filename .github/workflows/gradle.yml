@@ -133,7 +133,7 @@ jobs:
  #             echo "No vulnerabilities found"
  #           fi     
 
-  Imagen-Docker :
+  Imagen-Security :
      # needs: [SAST, SCA]
      runs-on: ubuntu-latest
      steps: 
@@ -175,3 +175,11 @@ jobs:
         run : |
           docker  push vitoko25/laboratorio-final:latest
 
+      
+      - name: Aqua Security Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: 'vitoko25/laboratorio-final:latest'
+          format: 'table'
+          exit-code: '1'
+          vuln-type: 'os,library'
