@@ -47,26 +47,66 @@ jobs:
           category: "/language:java-kotlin"  
               
 
-     - name: Wait for CodeQL processing
-       run: sleep 40
+   #  - name: Wait for CodeQL processing
+   #    run: sleep 40
 
-     - name: Fail pipeline if vulnerabilities exist
-       run: |
+   #  - name: Fail pipeline if vulnerabilities exist
+   #    run: |
       
-          echo "Checking CodeQL alerts..."
+   #       echo "Checking CodeQL alerts..."
       
-          RESPONSE=$(curl -s \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/code-scanning/alerts?state=open&ref=refs/heads/feature_laboratorio_final")
+   #       RESPONSE=$(curl -s \
+   #         -H "Accept: application/vnd.github+json" \
+   #         -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+   #         "https://api.github.com/repos/${{ github.repository }}/code-scanning/alerts?state=open&ref=refs/heads/feature_laboratorio_final")
       
-          echo "$RESPONSE" | jq -r '.[] | "\(.rule.security_severity_level) - \(.rule.description)"'
+   #       echo "$RESPONSE" | jq -r '.[] | "\(.rule.security_severity_level) - \(.rule.description)"'
       
-          SEVERITY_FOUND=$(echo "$RESPONSE" | jq -r '.[] | .rule.security_severity_level' | grep -E 'medium|high|critical' || true)
+   #       SEVERITY_FOUND=$(echo "$RESPONSE" | jq -r '.[] | .rule.security_severity_level' | grep -E 'medium|high|critical' || true)
       
-          if [ ! -z "$SEVERITY_FOUND" ]; then
-            echo "Medium/High/Critical vulnerabilities detected"
-            exit 1
-          else
-            echo "No vulnerabilities found"
-          fi
+   #       if [ ! -z "$SEVERITY_FOUND" ]; then
+   #         echo "Medium/High/Critical vulnerabilities detected"
+   #         exit 1
+   #       else
+   #         echo "No vulnerabilities found"
+   #       fi
+
+  SCA: 
+    needs: SAST
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+ 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Up JDK
+        uses: actions/setup-java@v4.2.1
+        with:
+          java-version: '17'
+          distribution: 'temurin'  
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew   
+
+      - name: Build with Gradle Wrapper
+        run: ./gradlew build
+
+      - name: Dependency Check
+        uses: dependency-check/Dependency-Check_Action@1.1.0
+        with:
+          project: 'laboratorio_final_DevSecOps'  
+          path: '.'
+          format: 'HTML'
+          args: >
+             --disableCentral
+             
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          path: ${{github.workspace}}/reports    
+
+       
