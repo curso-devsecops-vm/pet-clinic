@@ -47,5 +47,24 @@ jobs:
           category: "/language:java-kotlin"  
               
 
+     - name: Wait for CodeQL processing
+       run: sleep 40
 
+     - name: Fail pipeline if vulnerabilities exist
+       run: |
+
+          echo "Checking CodeQL alerts..."
+
+          curl -s \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/code-scanning/alerts?state=open" \
+            | grep -E '"security_severity_level":"(medium|high|critical)"'
+
+          if [ $? -eq 0 ]; then
+            echo "Medium/High/Critical vulnerabilities detected"
+            exit 1
+          else
+            echo "No vulnerabilities found"
+          fi
 
