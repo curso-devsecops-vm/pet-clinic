@@ -95,23 +95,17 @@ jobs:
       - name: Build with Gradle Wrapper
         run: ./gradlew build
 
-      - name: Create reports directory
-        run: mkdir reports
-
-      - name: OWASP Dependency Check
-        run: |
-
-            docker run --rm \
-              -v ${{ github.workspace }}:/src \
-              -v ${{ github.workspace }}/reports:/report \
-              owasp/dependency-check:latest \
-              --scan /src \
-              --format "HTML" \
-              --out /report \
-              --failOnCVSS 4
-
-      - name: Upload Dependency Check Report
-        uses: actions/upload-artifact@v4
+      - name: Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
         with:
-          name: dependency-check-report
-          path: reports
+          project: 'laboratorio final'
+          path: '.'
+          format: 'HTML'
+          args: >
+            --disableCentral
+          
+      - name: Upload Test results
+        uses: actions/upload-artifact@master
+        with:
+           name: Depcheck report
+           path: ${{github.workspace}}/reports
