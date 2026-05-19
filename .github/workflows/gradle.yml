@@ -111,3 +111,24 @@ jobs:
         with:
            name: Depcheck report
            path: ${{github.workspace}}/reports
+
+      # Validar vulnerabilidades
+      - name: Fail pipeline if vulnerabilities exist
+        run: |
+        
+            echo "===== Vulnerabilities Found ====="
+        
+            grep -E "CRITICAL|HIGH|MEDIUM" reports/dependency-check-report.html | head -20
+        
+            if grep -E "CRITICAL|HIGH|MEDIUM" reports/dependency-check-report.html
+            then
+              echo ""
+              echo "=========================================="
+              echo " Medium/High/Critical vulnerabilities detected"
+              echo " Pipeline stopped due security policy"
+              echo "=========================================="
+        
+              exit 1
+            else
+              echo "No vulnerabilities found"
+            fi     
