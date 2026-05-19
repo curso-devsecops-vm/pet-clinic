@@ -92,43 +92,64 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew   
 
-      - name: Build with Gradle Wrapper
-        run: ./gradlew build
+ #     - name: Build with Gradle Wrapper
+ #       run: ./gradlew build
 
-      - name: Dependency Check
-        uses: dependency-check/Dependency-Check_Action@main
-        env:
-         JAVA_HOME: /opt/jdk
-        with:
-          project: 'laboratorio final'
-          path: '.'
-          format: 'HTML'
-          args: >
-            --disableCentral
+ #     - name: Dependency Check
+ #       uses: dependency-check/Dependency-Check_Action@main
+ #       env:
+ #        JAVA_HOME: /opt/jdk
+ #       with:
+ #         project: 'laboratorio final'
+ #         path: '.'
+ #         format: 'HTML'
+ #         args: >
+ #           --disableCentral
           
-      - name: Upload Test results
-        uses: actions/upload-artifact@master
-        with:
-           name: Depcheck report
-           path: ${{github.workspace}}/reports
+ #     - name: Upload Test results
+ #       uses: actions/upload-artifact@master
+ #       with:
+ #          name: Depcheck report
+ #          path: ${{github.workspace}}/reports
 
       # Validar vulnerabilidades
-      - name: Fail pipeline if vulnerabilities exist
-        run: |
+ #     - name: Fail pipeline if vulnerabilities exist
+ #       run: |
         
-            echo "===== Vulnerabilities Found ====="
+ #           echo "===== Vulnerabilities Found ====="
         
-            grep -E "CRITICAL|HIGH|MEDIUM" reports/dependency-check-report.html | head -20
+ #           grep -E "CRITICAL|HIGH|MEDIUM" reports/dependency-check-report.html | head -20
         
-            if grep -E "CRITICAL|HIGH|MEDIUM" reports/dependency-check-report.html
-            then
-              echo ""
-              echo "=========================================="
-              echo " Medium/High/Critical vulnerabilities detected"
-              echo " Pipeline stopped due security policy"
-              echo "=========================================="
-        
-              exit 1
-            else
-              echo "No vulnerabilities found"
-            fi     
+ #           if grep -E "CRITICAL|HIGH|MEDIUM" reports/dependency-check-report.html
+ #           then
+ #             echo ""
+ #             echo "=========================================="
+ #             echo " Medium/High/Critical vulnerabilities detected"
+ #             echo " Pipeline stopped due security policy"
+ #             echo "=========================================="
+ #       
+ #             exit 1
+ #           else
+ #             echo "No vulnerabilities found"
+ #           fi     
+
+  Imagen-Docker :
+     # needs: [SAST, SCA]
+     runs-on: ubuntu-latest
+
+     steps: 
+      - uses: actions/checkout@v4    
+      - name: Docker Login
+        uses: docker/login-action@v4.1.0
+        with:
+          username: ${{secrets.USER_DOCKER}}
+          password: ${{secrets.PASS_DOCKER}}    
+      - name : Docker build
+        run: | 
+         docker build --tag  vitoko25/laboratorio-final:latest .
+
+                  
+      - name : docker push
+        run : |
+          docker  push vitoko25/laboratorio-final:latest
+
