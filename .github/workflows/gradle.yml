@@ -152,6 +152,10 @@ jobs:
 
       - name: Build with Gradle Wrapper
         run: ./gradlew build
+
+      - name: Rename JAR
+        run: |
+          cp build/libs/*.jar spring-petclinic-2.6.0.jar
      
       - uses: actions/checkout@v4    
       - name: Docker Login
