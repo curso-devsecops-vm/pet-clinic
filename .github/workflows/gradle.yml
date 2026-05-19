@@ -52,21 +52,20 @@ jobs:
 
      - name: Fail pipeline if vulnerabilities exist
        run: |
+
+        echo "Checking CodeQL alerts..."
     
-          echo "Checking CodeQL alerts..."
-      
-          RESPONSE=$(curl -s \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/code-scanning/alerts?state=open")
-      
-          echo "$RESPONSE"
-      
-          echo "$RESPONSE" | grep -E '"security_severity_level":"(medium|high|critical)"'
-      
-          if [ $? -eq 0 ]; then
-            echo "Medium/High/Critical vulnerabilities detected"
-            exit 1
-          else
-            echo "No vulnerabilities found"
-          fi
+        RESPONSE=$(curl -s \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/code-scanning/alerts?state=open&ref=refs/heads/feature_laboratorio_final")
+    
+        echo "$RESPONSE" | jq -r '.[] | "\(.rule.security_severity_level) - \(.rule.description)"'
+    
+        if echo "$RESPONSE" | grep -E '"security_severity_level":"(medium|high|critical)"'
+        then
+          echo "Medium/High/Critical vulnerabilities detected"
+          exit 1
+        else
+          echo "No vulnerabilities found"
+        fi
