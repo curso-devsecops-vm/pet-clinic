@@ -41,38 +41,38 @@ jobs:
      - name: Build with Gradle Wrapper
        run: ./gradlew build
           
- #    - name: Perform CodeQL Analysis
- #      uses: github/codeql-action/analyze@v3
- #      with:
- #         category: "/language:java-kotlin"  
+     - name: Perform CodeQL Analysis
+       uses: github/codeql-action/analyze@v3
+       with:
+          category: "/language:java-kotlin"  
               
 
-   #  - name: Wait for CodeQL processing
-   #    run: sleep 40
+     - name: Wait for CodeQL processing
+       run: sleep 40
 
-   #  - name: Fail pipeline if vulnerabilities exist
-   #    run: |
+     - name: Fail pipeline if vulnerabilities exist
+       run: |
       
-   #       echo "Checking CodeQL alerts..."
+          echo "Checking CodeQL alerts..."
       
-   #       RESPONSE=$(curl -s \
-   #         -H "Accept: application/vnd.github+json" \
-   #         -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-   #         "https://api.github.com/repos/${{ github.repository }}/code-scanning/alerts?state=open&ref=refs/heads/feature_laboratorio_final")
+          RESPONSE=$(curl -s \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/code-scanning/alerts?state=open&ref=refs/heads/feature_laboratorio_final")
       
-   #       echo "$RESPONSE" | jq -r '.[] | "\(.rule.security_severity_level) - \(.rule.description)"'
+          echo "$RESPONSE" | jq -r '.[] | "\(.rule.security_severity_level) - \(.rule.description)"'
       
-   #       SEVERITY_FOUND=$(echo "$RESPONSE" | jq -r '.[] | .rule.security_severity_level' | grep -E 'medium|high|critical' || true)
+          SEVERITY_FOUND=$(echo "$RESPONSE" | jq -r '.[] | .rule.security_severity_level' | grep -E 'medium|high|critical' || true)
       
-   #       if [ ! -z "$SEVERITY_FOUND" ]; then
-   #         echo "Medium/High/Critical vulnerabilities detected"
-   #         exit 1
-   #       else
-   #         echo "No vulnerabilities found"
-   #       fi
+          if [ ! -z "$SEVERITY_FOUND" ]; then
+            echo "Medium/High/Critical vulnerabilities detected"
+            exit 1
+          else
+            echo "No vulnerabilities found"
+          fi
 
   SCA: 
-   # needs: SAST
+    needs: SAST
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -92,49 +92,49 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew   
 
- #     - name: Build with Gradle Wrapper
- #       run: ./gradlew build
+      - name: Build with Gradle Wrapper
+        run: ./gradlew build
 
- #     - name: Dependency Check
- #       uses: dependency-check/Dependency-Check_Action@main
- #       env:
- #        JAVA_HOME: /opt/jdk
- #       with:
- #         project: 'laboratorio final'
- #         path: '.'
- #         format: 'HTML'
- #         args: >
- #           --disableCentral
+      - name: Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        env:
+         JAVA_HOME: /opt/jdk
+        with:
+          project: 'laboratorio final'
+          path: '.'
+          format: 'HTML'
+          args: >
+            --disableCentral
           
- #     - name: Upload Test results
- #       uses: actions/upload-artifact@master
- #       with:
- #          name: Depcheck report
- #          path: ${{github.workspace}}/reports
+      - name: Upload Test results
+        uses: actions/upload-artifact@master
+        with:
+           name: Depcheck report
+           path: ${{github.workspace}}/reports
 
-      # Validar vulnerabilidades
- #     - name: Fail pipeline if vulnerabilities exist
- #       run: |
+ 
+      - name: Fail pipeline if vulnerabilities exist
+        run: |
         
- #           echo "===== Vulnerabilities Found ====="
+            echo "===== Vulnerabilities Found ====="
         
- #           grep -E "CRITICAL|HIGH|MEDIUM" reports/dependency-check-report.html | head -20
+            grep -E "CRITICAL|HIGH|MEDIUM" reports/dependency-check-report.html | head -20
         
- #           if grep -E "CRITICAL|HIGH|MEDIUM" reports/dependency-check-report.html
- #           then
- #             echo ""
- #             echo "=========================================="
- #             echo " Medium/High/Critical vulnerabilities detected"
- #             echo " Pipeline stopped due security policy"
- #             echo "=========================================="
- #       
- #             exit 1
- #           else
- #             echo "No vulnerabilities found"
- #           fi     
+            if grep -E "CRITICAL|HIGH|MEDIUM" reports/dependency-check-report.html
+            then
+              echo ""
+              echo "=========================================="
+              echo " Medium/High/Critical vulnerabilities detected"
+              echo " Pipeline stopped due security policy"
+              echo "=========================================="
+        
+              exit 1
+            else
+              echo "No vulnerabilities found"
+            fi     
 
   Imagen-Security :
-     # needs: [SAST, SCA]
+     needs: [SAST, SCA]
      runs-on: ubuntu-latest
      steps: 
 
